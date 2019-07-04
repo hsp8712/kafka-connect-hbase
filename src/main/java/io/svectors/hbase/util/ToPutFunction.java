@@ -17,26 +17,23 @@
  */
 package io.svectors.hbase.util;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
+import com.google.common.base.Preconditions;
+import io.svectors.hbase.config.HBaseSinkConfig;
+import io.svectors.hbase.parser.EventParser;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.kafka.connect.sink.SinkRecord;
 import org.apache.log4j.Logger;
 
-import com.google.common.base.Function;
-import com.google.common.base.Preconditions;
-
-import io.svectors.hbase.config.HBaseSinkConfig;
-import io.svectors.hbase.parser.EventParser;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author ravi.magham
  */
-public class ToPutFunction implements Function<SinkRecord, Put> {
+public class ToPutFunction {
 
 	private final HBaseSinkConfig sinkConfig;
 	private final EventParser eventParser;
@@ -55,7 +52,6 @@ public class ToPutFunction implements Function<SinkRecord, Put> {
 	 * @param sinkRecord
 	 * @return
 	 */
-	@Override
 	public Put apply(final SinkRecord sinkRecord) {
 		Preconditions.checkNotNull(sinkRecord);
 		final String table = getTableName();
@@ -86,11 +82,11 @@ public class ToPutFunction implements Function<SinkRecord, Put> {
 				}
 			}
 		}else{
-			valuesMap.entrySet().stream().forEach(entry -> {
-				final String qualifier = entry.getKey();
-				final byte[] value = entry.getValue();
-				put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(qualifier), value);
-			});
+			List<String> columnList = columnMapping(columnFamily,table);
+			for(String column : columnList) {
+				final byte[] colValue = valuesMap.get(column);
+				put.addColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column), colValue);
+			}
 		}
 		return put;
 	}

@@ -38,13 +38,18 @@ import java.util.List;
 import java.util.Map;
 
 import io.svectors.hbase.config.HBaseSinkConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class HBaseSinkTask extends SinkTask {
 
+    private static final Logger LOG = LoggerFactory.getLogger(HBaseSinkTask.class);
+
     private ToPutFunction toPutFunction;
     private HBaseClient hBaseClient;
     private String hbaseTable;
+    private long lastTime;
 
     @Override
     public String version() {
@@ -64,10 +69,21 @@ public class HBaseSinkTask extends SinkTask {
         this.hBaseClient = new HBaseClient(connectionFactory);
         this.toPutFunction = new ToPutFunction(sinkConfig);
         this.hbaseTable = sinkConfig.getString(HBaseSinkConfig.TABLE_NAME);
+
+        this.lastTime = System.nanoTime();
     }
 
     @Override
     public void put(Collection<SinkRecord> records) {
+
+        long currentTime = System.nanoTime();
+
+        int diffSeconds = (int)((currentTime - lastTime) / (1000L * 1000L));
+        if (diffSeconds >= 120) {
+            LOG.info("Put size = {}.", records.size());
+            lastTime = currentTime;
+        }
+
         Map<String, List<SinkRecord>> byTopic =  records.stream()
           .collect(groupingBy(SinkRecord::topic));
 
