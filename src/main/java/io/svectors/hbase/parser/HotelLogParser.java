@@ -2,7 +2,6 @@ package io.svectors.hbase.parser;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import org.apache.commons.collections.map.HashedMap;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.sink.SinkRecord;
@@ -12,6 +11,7 @@ import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 
 
@@ -30,7 +30,7 @@ public class HotelLogParser implements EventParser {
 
     @Override
     public Map<String, byte[]> parseKey(SinkRecord sr) throws EventParsingException {
-        return new HashedMap(0);
+        return null;
     }
 
     @Override
@@ -41,7 +41,7 @@ public class HotelLogParser implements EventParser {
                 byte[] value = (byte[]) sr.value();
                 try {
 
-                    Map<String, byte[]> values = new HashedMap();
+                    Map<String, byte[]> values = new HashMap<>();
                     HotelLog hotelLog = toHotelLog(value);
 
                     values.put("rowkey", buildRowKey(hotelLog, sr.kafkaPartition(), sr.kafkaOffset()));

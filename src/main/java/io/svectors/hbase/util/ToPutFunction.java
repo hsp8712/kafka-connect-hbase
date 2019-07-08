@@ -62,7 +62,10 @@ public class ToPutFunction {
 		final Map<String, byte[]> valuesMap = this.eventParser.parseValue(sinkRecord);
 		final Map<String, byte[]> keysMap = this.eventParser.parseKey(sinkRecord);
 
-		valuesMap.putAll(keysMap);
+		if (keysMap != null) {
+			valuesMap.putAll(keysMap);
+		}
+
 		final String[] rowkeyColumns = rowkeyColumns(table);
 		final byte[] rowkey = toRowKey(valuesMap, rowkeyColumns, delimiter);
 
