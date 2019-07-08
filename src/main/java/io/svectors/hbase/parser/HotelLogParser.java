@@ -73,11 +73,11 @@ public class HotelLogParser implements EventParser {
                 .toInstant(ZoneOffset.UTC).toEpochMilli();
 
 
-        byte[] salt = Bytes.toBytes((short)(hotel.hashCode() | 0xffff));
+        byte[] salt = Bytes.toBytes((short)(hotel.hashCode() & 0xffff));
         byte[] hotelBytes = hotel.getBytes(CHARSET);
         byte[] timeBytes = Bytes.toBytes(epochMilli);
-        byte[] partitionBytes = Bytes.toBytes((short)(kafkaPartition | 0xffff));
-        byte[] offsetBytes = Bytes.toBytes((short)(kafkaOffset | 0xffff));
+        byte[] partitionBytes = Bytes.toBytes((short)(kafkaPartition & 0xffff));
+        byte[] offsetBytes = Bytes.toBytes((short)(kafkaOffset & 0xffff));
 
         byte[] seg1 = Bytes.add(salt, hotelBytes, new byte[] { 0x00 });
         byte[] seg2 = Bytes.add(timeBytes, partitionBytes, offsetBytes);
